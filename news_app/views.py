@@ -1,3 +1,15 @@
+"""
+views.py
+
+This module contains all the view functions for the News App, including:
+- User registration and authentication
+- Dashboard views based on user roles
+- Article CRUD operations (create, edit, delete)
+- Article approval and publishing workflows
+- Public views for listing and viewing articles
+- API endpoints for retrieving articles
+"""
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
@@ -19,6 +31,15 @@ from .serializers import ArticleSerializer
 # User Registration
 # -----------------------
 def register(request):
+    """
+    Handle user registration.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Renders the registration page or redirects to dashboard on success.
+    """
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -45,6 +66,15 @@ def register(request):
 # -----------------------
 @login_required
 def dashboard(request):
+    """
+    Display the dashboard page according to the user's role.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Renders the dashboard template with user-specific data.
+    """
     user = request.user
     role = user.role
 
@@ -70,6 +100,15 @@ def dashboard(request):
 # -----------------------
 @login_required
 def create_article(request):
+    """
+    Create a new article by a journalist.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Renders the article creation page or redirects to dashboard.
+    """
     if request.user.role != "journalist":
         return HttpResponseForbidden("You are not allowed to create articles.")
     
@@ -78,7 +117,6 @@ def create_article(request):
         if form.is_valid():
             article = form.save(commit=False)
             article.journalist = request.user
-            # Journalist articles default as drafts
             article.is_draft = True
             article.save()
             return redirect("news_app:dashboard")
@@ -89,6 +127,16 @@ def create_article(request):
 
 @login_required
 def article_edit(request, pk):
+    """
+    Edit an existing article. Only the author or editor can edit.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        pk (int): Primary key of the article.
+
+    Returns:
+        HttpResponse: Renders the article update page or redirects on success.
+    """
     article = get_object_or_404(Article, pk=pk)
     if request.user != article.journalist and request.user.role != "editor":
         return HttpResponseForbidden("You do not have permission to edit this article.")
@@ -106,6 +154,16 @@ def article_edit(request, pk):
 
 @login_required
 def article_delete(request, pk):
+    """
+    Delete an article. Only the author or editor can delete.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        pk (int): Primary key of the article.
+
+    Returns:
+        HttpResponse: Renders delete confirmation page or redirects on success.
+    """
     article = get_object_or_404(Article, pk=pk)
     if request.user != article.journalist and request.user.role != "editor":
         return HttpResponseForbidden("You do not have permission to delete this article.")
@@ -123,17 +181,25 @@ def article_delete(request, pk):
 # -----------------------
 @login_required
 def article_approve(request, pk):
+    """
+    Approve an article. Only editors can approve articles of their publisher.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        pk (int): Primary key of the article.
+
+    Returns:
+        HttpResponseRedirect: Redirects to dashboard.
+    """
     if request.user.role != "editor":
         return HttpResponseForbidden("Only editors can approve articles.")
 
     article = get_object_or_404(Article, pk=pk)
 
-    # Editors must belong to the same publisher as the article
     if article.publisher and request.user not in article.publisher.members.all():
         return HttpResponseForbidden("You must be an editor of this publisher to approve.")
 
     if request.method == "POST":
-        # Only send email if article was not already approved
         if not article.approved:
             article.approved = True
             article.is_draft = False
@@ -157,14 +223,23 @@ def article_approve(request, pk):
 # -----------------------
 @login_required
 def article_publish(request, pk):
+    """
+    Publish an article. Editors or publishers can publish articles for their publishers.
+    Independent journalists can publish their own articles.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        pk (int): Primary key of the article.
+
+    Returns:
+        HttpResponseRedirect: Redirects to dashboard.
+    """
     article = get_object_or_404(Article, pk=pk)
 
     if article.publisher:
         if request.user.role in ["publisher", "editor"] and request.user not in article.publisher.members.all():
             return HttpResponseForbidden("You must be a member/editor of this publisher to publish.")
-        # Editors of the publisher are implicitly allowed
     else:
-        # Independent journalist self-publishing
         if request.user != article.journalist:
             return HttpResponseForbidden("Only the journalist can publish their independent article.")
 
@@ -177,11 +252,21 @@ def article_publish(request, pk):
 
     return redirect("news_app:dashboard")
 
+
 @login_required
 def publish_independent_article(request, pk):
+    """
+    Publish an independent article by its authoring journalist.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        pk (int): Primary key of the article.
+
+    Returns:
+        HttpResponseRedirect: Redirects to dashboard.
+    """
     article = get_object_or_404(Article, pk=pk)
 
-    # Only the authoring journalist can publish their independent article
     if article.publisher:
         return HttpResponseForbidden("This article belongs to a publisher. Use the normal publish flow.")
     if request.user != article.journalist:
@@ -196,19 +281,38 @@ def publish_independent_article(request, pk):
     
     return redirect("news_app:dashboard")
 
+
 # -----------------------
 # Public Views
 # -----------------------
 def article_list(request):
+    """
+    Display a list of approved and published articles.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: Renders article list page.
+    """
     articles = Article.objects.filter(approved=True, published=True).order_by("-created_at")
     return render(request, "news_app/article_list.html", {"articles": articles})
 
 
 @login_required
 def article_detail(request, pk):
+    """
+    Display a single article. Readers cannot view unpublished articles.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        pk (int): Primary key of the article.
+
+    Returns:
+        HttpResponse: Renders article detail page.
+    """
     article = get_object_or_404(Article, pk=pk)
     
-    # Readers only see published ones
     if request.user.role == "reader" and not article.published:
         return HttpResponseForbidden("You cannot view unpublished articles.")
 
@@ -220,6 +324,15 @@ def article_detail(request, pk):
 # -----------------------
 @api_view(["GET"])
 def api_articles(request):
+    """
+    API endpoint to list all approved and published articles.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        Response: Serialized list of articles.
+    """
     articles = Article.objects.filter(approved=True, published=True).order_by("-created_at")
     serializer = ArticleSerializer(articles, many=True)
     return Response(serializer.data)
@@ -227,6 +340,16 @@ def api_articles(request):
 
 @api_view(["GET"])
 def api_article_detail(request, pk):
+    """
+    API endpoint to retrieve a single approved and published article.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        pk (int): Primary key of the article.
+
+    Returns:
+        Response: Serialized article data.
+    """
     article = get_object_or_404(Article, pk=pk, approved=True, published=True)
     serializer = ArticleSerializer(article)
     return Response(serializer.data)
