@@ -1,3 +1,15 @@
+"""
+models.py
+
+Defines the data models for the News App.
+
+Models:
+- CustomUser: Extends AbstractUser with roles (Reader, Journalist, Editor, Publisher)
+- Publisher: Represents a publishing organization with members
+- Article: Represents articles written by journalists and managed by editors/publishers
+- Newsletter: Represents newsletters sent by journalists to readers
+"""
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
@@ -28,7 +40,7 @@ class CustomUser(AbstractUser):
 
     # Readers can follow multiple journalists
     subscriptions_journalists = models.ManyToManyField(
-        "self", blank=True, symmetrical=False, related_name="followers"
+        "self", blank=False, symmetrical=False, related_name="followers"
     )
 
     def __str__(self):
@@ -50,9 +62,11 @@ class Publisher(models.Model):
     )
 
     def editors(self):
+        """Return all members with the editor role."""
         return self.members.filter(role="editor")
 
     def journalists(self):
+        """Return all members with the journalist role."""
         return self.members.filter(role="journalist")
 
     def has_member(self, user):
@@ -64,6 +78,11 @@ class Publisher(models.Model):
 
 
 class Article(models.Model):
+    """
+    Article model representing a news article written by a journalist.
+    Can belong to a publisher, be approved, published, or saved as a draft.
+    """
+
     title = models.CharField(max_length=255)
     content = models.TextField()
 
@@ -85,17 +104,16 @@ class Article(models.Model):
 
     approved = models.BooleanField(default=False)
     published = models.BooleanField(default=False)
-
-    # Journalists can save unpublished drafts
     is_draft = models.BooleanField(default=True)
     published_at = models.DateTimeField(null=True, blank=True)
-
     created_at = models.DateTimeField(default=timezone.now, editable=False)
 
     def can_publish(self, user):
         """
+        Determine if a given user can publish this article.
         Editors can publish if they belong to the same publisher.
-        Publishers can always publish their own articles.
+        Publishers can always publish articles under their organization.
+        Independent journalists can publish their own articles.
         """
         if self.publisher:
             return (
@@ -103,7 +121,6 @@ class Article(models.Model):
             ) or (
                 user.role == "editor" and self.publisher.has_member(user)
             )
-        # Independent journalist publishing their own work
         return user == self.journalist and user.role == "journalist"
 
     def __str__(self):
@@ -112,7 +129,7 @@ class Article(models.Model):
 
 class Newsletter(models.Model):
     """
-    Newsletter created by a journalist, sent to readers.
+    Newsletter created by a journalist and sent to readers.
     """
 
     title = models.CharField(max_length=255)
