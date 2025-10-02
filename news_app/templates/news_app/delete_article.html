@@ -1,0 +1,25 @@
+{% extends "news_app/base.html" %}
+
+{% block title %}Delete Article{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm p-4 rounded-3 bg-cream">
+                <h2 class="text-center text-navy mb-3">Delete Article</h2>
+                <p class="text-center">
+                    Are you sure you want to delete the article
+                    <strong>"{{ article.title }}"</strong>?
+                </p>
+
+                <form method="post" class="text-center mt-4">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-lg me-2">Yes, Delete</button>
+                    <a href="{% url 'news_app:dashboard' %}" class="btn btn-secondary btn-lg">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

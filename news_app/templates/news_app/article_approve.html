@@ -1,0 +1,15 @@
+{% extends "news_app/base.html" %}
+
+{% block title %}Approve Article{% endblock %}
+
+{% block content %}
+<div class="card p-4 shadow mt-4">
+    <h2 class="text-navy mb-3">Approve: {{ article.title }}</h2>
+    <p class="mb-4">Are you sure you want to approve this article?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-navy me-2">Approve</button>
+        <a href="{% url 'news_app:dashboard' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

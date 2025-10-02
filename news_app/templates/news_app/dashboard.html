@@ -1,0 +1,130 @@
+{% extends "news_app/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Dashboard</h1>
+
+{# ================= Journalist Section ================= #}
+{% if is_journalist %}
+<div class="mb-4">
+    <a href="{% url 'news_app:create_article' %}" class="btn btn-navy mb-3">Create Article</a>
+</div>
+
+<h3>My Articles</h3>
+<ul class="list-group mb-4">
+    {% for article in my_articles %}
+        <li class="list-group-item d-flex justify-content-between align-items-center shadow-sm rounded-3 mb-2">
+            {{ article.title }}
+            <div class="d-flex align-items-center">
+                <a href="{% url 'news_app:article_detail' article.pk %}" class="btn btn-outline-navy btn-sm me-2">View</a>
+                <a href="{% url 'news_app:article_edit' article.pk %}" class="btn btn-warning btn-sm me-2">Edit</a>
+                <form action="{% url 'news_app:article_delete' article.pk %}" method="post" class="d-inline me-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+
+                {# Independent publish button for articles without a publisher #}
+                {% if not article.publisher and not article.published %}
+                    <form action="{% url 'news_app:publish_independent_article' article.pk %}" method="post" class="d-inline me-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm">Publish</button>
+                    </form>
+                {% endif %}
+
+                {# Article Status Badge #}
+                {% if not article.approved %}
+                    <span class="badge bg-warning text-dark">Pending Approval</span>
+                {% elif article.approved and not article.published %}
+                    <span class="badge bg-info text-dark">Approved (Awaiting Publishing)</span>
+                {% elif article.published %}
+                    <span class="badge bg-success">Published</span>
+                {% endif %}
+            </div>
+        </li>
+    {% empty %}
+        <li class="list-group-item">You haven't written any articles yet.</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{# ================= Editor Section ================= #}
+{% if is_editor %}
+<h3>All Articles for Your Publishers</h3>
+<ul class="list-group mb-4">
+    {% for article in all_articles %}
+        <li class="list-group-item d-flex justify-content-between align-items-center shadow-sm rounded-3 mb-2">
+            {{ article.title }} (by {{ article.journalist.username }})
+            <div class="d-flex align-items-center">
+
+                {# Approval Button / Status #}
+                {% if not article.approved %}
+                    <form action="{% url 'news_app:article_approve' article.pk %}" method="post" class="d-inline me-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                    </form>
+                    <span class="badge bg-warning text-dark">Pending Approval</span>
+                {% elif article.approved and not article.published %}
+                    <span class="badge bg-info text-dark">Approved (Awaiting Publishing)</span>
+                {% elif article.published %}
+                    <span class="badge bg-success">Published</span>
+                {% endif %}
+
+                {# Publish Button (editor can publish if member of publisher) #}
+                {% if article.approved and not article.published and article.publisher and user in article.publisher.members.all %}
+                    <form action="{% url 'news_app:article_publish' article.pk %}" method="post" class="d-inline me-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-sm">Publish</button>
+                    </form>
+                {% endif %}
+
+                {# Edit & Delete Buttons #}
+                <a href="{% url 'news_app:article_edit' article.pk %}" class="btn btn-warning btn-sm me-2">Edit</a>
+                <form action="{% url 'news_app:article_delete' article.pk %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </div>
+        </li>
+    {% empty %}
+        <li class="list-group-item">No articles found for your publishers.</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{# ================= Publisher Section ================= #}
+{% if is_publisher %}
+<h3>Articles Ready to Publish (Approved but Unpublished)</h3>
+<ul class="list-group mb-4">
+    {% for article in approved_articles %}
+        <li class="list-group-item d-flex justify-content-between align-items-center shadow-sm rounded-3 mb-2">
+            {{ article.title }} (by {{ article.journalist.username }})
+            <div class="d-flex align-items-center">
+                <a href="{% url 'news_app:article_detail' article.pk %}" class="btn btn-outline-navy btn-sm me-2">View</a>
+                <form action="{% url 'news_app:article_publish' article.pk %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-sm">Publish</button>
+                </form>
+            </div>
+        </li>
+    {% empty %}
+        <li class="list-group-item">No approved articles awaiting publishing</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{# ================= Reader Section ================= #}
+{% if is_reader %}
+<h3>Latest Articles</h3>
+<ul class="list-group mb-4">
+    {% for article in published_articles %}
+        <li class="list-group-item shadow-sm rounded-3 mb-2">
+            <a href="{% url 'news_app:article_detail' article.pk %}">{{ article.title }}</a> 
+            (by {{ article.journalist.username }}, {{ article.published_at|date:"M d, Y" }})
+        </li>
+    {% empty %}
+        <li class="list-group-item">No published articles yet.</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

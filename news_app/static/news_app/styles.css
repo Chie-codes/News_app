@@ -1,0 +1,79 @@
+/* Body */
+body.bg-cream {
+    background-color: #fdfbf7; /* Cream background */
+    font-family: "Georgia", serif; /* Elegant serif font */
+    margin: 0;
+    padding: 0;
+}
+
+/* Navbar */
+.navbar.bg-navy {
+    background-color: #1d3557; /* Navy background */
+}
+
+/* Text Colors */
+.text-navy {
+    color: #1d3557;
+}
+
+/* Buttons */
+.btn-navy {
+    background-color: #1d3557; /* Navy background */
+    color: #fdfbf7; /* Cream text */
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.btn-navy:hover {
+    background-color: #16324f; /* Darker navy on hover */
+    color: #ffffff;
+}
+
+.btn-navy:disabled {
+    background-color: #9ca3af; /* Greyed out for disabled buttons */
+    color: #fdfbf7;
+    cursor: not-allowed;
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 10px;
+    background-color: #ffffff;
+    padding: 1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    color: #1d3557;
+}
+
+/* Links */
+a {
+    color: #1d3557;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Forms */
+input, textarea, select {
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    padding: 0.5rem;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #1d3557;
+    outline: none;
+}
