@@ -1,8 +1,20 @@
+"""
+serializers.py
+
+This module defines Django REST Framework serializers for the News App.
+
+- ArticleSerializer: Serializes Article model fields for API endpoints.
+- PublisherSerializer: Serializes Publisher model fields for API endpoints.
+- NewsletterSerializer: Serializes Newsletter model fields for API endpoints.
+"""
+
 from rest_framework import serializers
 from .models import Article, Publisher, Newsletter
 
 
 class ArticleSerializer(serializers.ModelSerializer):
+    """Serializer for Article model, used in API endpoints."""
+    
     class Meta:
         model = Article
         fields = [
@@ -26,6 +38,8 @@ class ArticleSerializer(serializers.ModelSerializer):
 
 
 class PublisherSerializer(serializers.ModelSerializer):
+    """Serializer for Publisher model, used in API endpoints."""
+    
     class Meta:
         model = Publisher
         fields = [
@@ -36,6 +50,8 @@ class PublisherSerializer(serializers.ModelSerializer):
 
 
 class NewsletterSerializer(serializers.ModelSerializer):
+    """Serializer for Newsletter model, used in API endpoints."""
+    
     class Meta:
         model = Newsletter
         fields = [

@@ -1,3 +1,16 @@
+"""
+urls.py
+
+This module defines all URL patterns for the News App, including:
+- Public views (article list and detail)
+- Journalist actions (create, edit, delete articles)
+- Editor actions (approve articles)
+- Publisher actions (publish articles)
+- User authentication (register, login, logout)
+- Dashboard
+- API endpoints
+"""
+
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from . import views

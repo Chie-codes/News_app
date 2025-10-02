@@ -1,3 +1,14 @@
+"""
+signals.py
+
+This module defines Django signal handlers for the News App:
+
+- create_default_groups: Ensures that default user groups and permissions
+  exist after migrations.
+- notify_article_approved: Sends email notifications to journalists when
+  their articles are approved.
+"""
+
 from django.db.models.signals import post_migrate, post_save
 from django.dispatch import receiver
 from django.core.mail import send_mail

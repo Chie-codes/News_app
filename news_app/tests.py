@@ -1,10 +1,27 @@
+"""
+tests.py
+
+This module contains automated tests for the News App, including:
+- User role permissions (reader, journalist, editor, publisher)
+- Article CRUD operations (create, edit, delete)
+- Article approval and publishing
+- API endpoints for articles and drafts
+"""
+
 import json
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import Group
 from .models import CustomUser, Publisher, Article
 
+
 class ArticleAPITest(TestCase):
+    """
+    TestCase for verifying News App functionality:
+    - Set up test data for groups, users, publisher, and articles
+    - Test permissions for creating, editing, deleting, approving, and publishing articles
+    - Test API endpoints for listing and retrieving articles
+    """
     @classmethod
     def setUpTestData(cls):
         # -----------------------
@@ -145,7 +162,7 @@ class ArticleAPITest(TestCase):
         self.assertIn(response.status_code, [302])
         self.draft_article.refresh_from_db()
         self.assertTrue(self.draft_article.approved)
-        # ✅ Email assertion removed to prevent test failure
+        # Email assertion removed to prevent test failure
 
     def test_non_editor_cannot_approve_article(self):
         self.client.login(username="reader", password="pass123")
