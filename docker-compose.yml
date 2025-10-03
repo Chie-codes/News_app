@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0   # safer than just 'mysql:8'
+    restart: always
+    container_name: news_app-db
+    environment:
+      MYSQL_DATABASE: news_app
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: news_user
+      MYSQL_PASSWORD: news_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  web:
+    build: .
+    container_name: news_app-web
+    restart: always
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      MYSQL_DATABASE: news_app
+      MYSQL_USER: news_user
+      MYSQL_PASSWORD: news_pass
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+
+volumes:
+  db_data:
