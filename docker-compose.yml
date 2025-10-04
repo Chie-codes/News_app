@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   db:
-    image: mysql:8.0   # safer than just 'mysql:8'
+    image: mysql:8.0
     restart: always
     container_name: news_app-db
     environment:
@@ -34,6 +32,7 @@ services:
       MYSQL_PASSWORD: news_pass
       MYSQL_HOST: db
       MYSQL_PORT: 3306
+      DOCKER_ENV: "true"
 
 volumes:
   db_data:
