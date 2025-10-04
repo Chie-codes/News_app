@@ -11,13 +11,13 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "replace-this-with-a-strong-key"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-default-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() == "true"
 
 # Hosts allowed to serve the project
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
 
 # Application definition
 INSTALLED_APPS = [
@@ -39,7 +39,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",  # added for security
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 ROOT_URLCONF = "news_project.urls"
@@ -53,7 +53,7 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
-                "django.template.context_processors.request",  # required for 'request.user'
+                "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
@@ -64,17 +64,30 @@ TEMPLATES = [
 WSGI_APPLICATION = "news_project.wsgi.application"
 
 # Database configuration
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('MYSQL_DATABASE', 'news_app'),
-        'USER': os.getenv('MYSQL_USER', 'news_user'),
-        'PASSWORD': os.getenv('MYSQL_PASSWORD', 'news_pass'),
-        'HOST': os.getenv('MYSQL_HOST', 'db'),
-        'PORT': os.getenv('MYSQL_PORT', '3306'),
+if os.getenv("DOCKER_ENV") == "true":
+    # Inside Docker → use service name `db`
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": os.getenv("MYSQL_DATABASE", "news_app"),
+            "USER": os.getenv("MYSQL_USER", "news_user"),
+            "PASSWORD": os.getenv("MYSQL_PASSWORD", "news_pass"),
+            "HOST": os.getenv("MYSQL_HOST", "db"),
+            "PORT": os.getenv("MYSQL_PORT", "3306"),
+        }
     }
-}
-
+else:
+    # Local dev/testing → connect to localhost
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": os.getenv("MYSQL_DATABASE", "news_app"),
+            "USER": os.getenv("MYSQL_USER", "root"),
+            "PASSWORD": os.getenv("MYSQL_PASSWORD", "root"),
+            "HOST": "127.0.0.1",
+            "PORT": "3306",
+        }
+    }
 
 # Password validation (can add validators in production)
 AUTH_PASSWORD_VALIDATORS = []
@@ -87,7 +100,7 @@ USE_TZ = True
 
 # Static files (CSS, JS, images)
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "news_app/static"]  # ensure this exists
+STATICFILES_DIRS = [BASE_DIR / "news_app/static"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -100,4 +113,3 @@ LOGOUT_REDIRECT_URL = "news_app:login"
 
 # Email
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
