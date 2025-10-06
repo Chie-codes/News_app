@@ -37,6 +37,7 @@ pip install -r requirements.txt
 ```
 4. Run migration
 ```powershell
+python manage.py makemigrations
 python manage.py migrate
 ```
 5. Create a superuser
@@ -48,13 +49,25 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-## Setup Using Docker
+## Setup Using Docker Compose
 
-1. Install docker and ensure its running
-2. Build docker image
+1. Make sure Docker is installed and running.
+2. From the root of your project, build and start the containers:
+
 ```powershell
-docker build -t news-app:latest .
-docker run -p 8000:8000 news-app:latest
+docker compose up --build
+```
+This will:
+
+- Build the Django app image
+- Start the MySQL database container
+- Run makemigrations and migrate automatically
+- Run the Django development server on http://localhost:8000
+
+3. To stop and remove containers and volumes:
+
+```powershell
+docker compose down -v
 ```
 
 ## Sphinx
