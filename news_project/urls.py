@@ -7,6 +7,8 @@ The `urlpatterns` list routes URLs to views. For more information please see:
 
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     # Admin site
@@ -17,3 +19,6 @@ urlpatterns = [
     path("api/news/", include("news_app.api_urls", namespace="news_api")),
 
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

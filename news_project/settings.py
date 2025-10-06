@@ -17,7 +17,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-default-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() == "true"
 
 # Hosts allowed to serve the project
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 # Application definition
 INSTALLED_APPS = [
@@ -99,8 +99,14 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JS, images)
-STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "news_app/static"]
+STATIC_URL = '/static/'
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'news_app' / 'static',
+]
+
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

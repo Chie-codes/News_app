@@ -71,7 +71,6 @@ Thumbs.db
 .history
 
 # Build / packaging
-build/
 dist/
 downloads/
 eggs/
