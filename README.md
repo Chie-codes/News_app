@@ -61,7 +61,7 @@ This will:
 
 - Build the Django app image
 - Start the MySQL database container
-- Run makemigrations and migrate automatically (see updated docker-compose.yml)
+- Run makemigrations and migrate automatically
 - Run the Django development server on http://localhost:8000
 
 3. To stop and remove containers and volumes:
